@@ -16,6 +16,7 @@ GITHUB_SERVER_URL="${SERVER_URL:-https://github.com}"
 
 validate_args() {
   wait_interval=10 # Waits for 10 seconds
+  echo "Configs: wait: $INPUT_WAITING_INTERVAL, owner: $INPUT_OWNER, repo: $INPUT_REPO, ref: $INPUT_REF"
   if [ "${INPUT_WAITING_INTERVAL}" ]
   then
     wait_interval=${INPUT_WAITING_INTERVAL}
@@ -84,8 +85,8 @@ validate_args() {
 
 trigger_workflow() {
   echo "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches"
-
-  curl --fail -X POST "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
+  sleep 5
+  curl --fail -v -X POST "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/dispatches" \
     -H "Accept: application/vnd.github.v3+json" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" \
@@ -105,9 +106,10 @@ wait_for_workflow_to_finish() {
   last_workflow="null"
   while [[ "$last_workflow" == "null" ]]
   do
+    sleep 10 #waiting for 10 second before starting to get id. This will help to avoid crazy loops
     echo "Using the following params to filter the workflow runs to get the triggered run id -"
     echo "Query params: ${query}"
-    last_workflow=$(curl -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
+    last_workflow=$(curl -X -v GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
       -H 'Accept: application/vnd.github.antiope-preview+json' \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '[.workflow_runs[]] | first')
   done
