@@ -109,7 +109,7 @@ wait_for_workflow_to_finish() {
     sleep 10 #waiting for 10 second before starting to get id. This will help to avoid crazy loops
     echo "Using the following params to filter the workflow runs to get the triggered run id -"
     echo "Query params: ${query}"
-    last_workflow=$(curl -X -v GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
+    last_workflow=$(curl -v -X GET "${GITHUB_API_URL}/repos/${INPUT_OWNER}/${INPUT_REPO}/actions/workflows/${INPUT_WORKFLOW_FILE_NAME}/runs?${query}" \
       -H 'Accept: application/vnd.github.antiope-preview+json' \
       -H "Authorization: Bearer ${INPUT_GITHUB_TOKEN}" | jq '[.workflow_runs[]] | first')
   done
